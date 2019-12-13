@@ -1,31 +1,66 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <!-- <transition name="van-slide-right">
+      <router-view />
+    </transition> -->
+    <router-view />
+    <van-tabbar v-model="active" route>
+      <van-tabbar-item replace to="/chat" name="chat" info="48">
+        <!-- <room-dot></room-dot> -->
+        <span>嗨~</span>
+        <!-- slot-scope="props" -->
+        <van-icon class="iconfont" class-prefix="icon" slot="icon" :name="icon.chat"></van-icon>
+      </van-tabbar-item>
+      <van-tabbar-item replace to="/address-book" name="address-book">
+        <span>通讯录</span>
+        <!-- slot-scope="props" -->
+        <van-icon class="iconfont" class-prefix="icon" slot="icon" :name="icon.contacts"></van-icon>
+      </van-tabbar-item>
+      <van-tabbar-item replace to="/find" name="find" dot>
+        <span>发现</span>
+        <!-- slot-scope="props" -->
+        <van-icon class="iconfont" class-prefix="icon" slot="icon" :name="icon.find"></van-icon>
+      </van-tabbar-item>
+      <van-tabbar-item replace to="/about-me" name="about-me">
+        <span>我</span>
+        <!-- slot-scope="props" -->
+        <van-icon class="iconfont" class-prefix="icon" slot="icon" :name="icon.aboutMe"></van-icon>
+      </van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 
+<script>
+export default {
+  data() {
+    return {
+      active: "chat",
+      icon: {
+        chat: "liaotian",
+        contacts: "contacts",
+        find: "faxian1",
+        aboutMe: "wo"
+      }
+    };
+  }
+};
+</script>
+
 <style lang="scss">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+  .van-tabbar {
+    z-index: 999;
+    height: 3.8rem;
+    background-color: #eeeeee;
+    .van-tabbar-item {
+      .van-tabbar-item__icon {
+        i {
+          font-size: 1.5rem;
+        }
+      }
     }
   }
 }

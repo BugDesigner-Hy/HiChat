@@ -1,24 +1,11 @@
-# hichat
+# HiChat (嗨聊) --仿微信聊天应用
 
-## Project setup
-```
-npm install
-```
+### demo预览
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+暂时没有
 
-### Compiles and minifies for production
-```
-npm run build
-```
+#### 完成进度
 
-### Lints and fixes files
-```
-npm run lint
-```
+1.完成底部菜单栏
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+2.完成聊天首页
