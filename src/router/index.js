@@ -9,27 +9,39 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/chat',
-    name: 'Chat',
-    component: Chat
+    path: '/',
+    name: 'Home',
+    redirect:'/chat',
+    component: () => import(/* webpackChunkName: "about" */ '../views/Home.vue'),
+    children: [
+      {
+        path: 'chat',
+        name: 'Chat',
+        component: Chat
+      }, {
+        path: 'address-book',
+        name: 'AddressBook',
+        component: AddressBook
+      }, {
+        path: '/find',
+        name: 'Find',
+        component: Find
+      }, {
+        path: '/about-me',
+        name: 'AboutMe',
+        component: () => import(/* webpackChunkName: "views" */ '../views/aboutMe/AboutMe.vue')
+      }
+    ]
   },
   {
-    path: '/address-book',
-    name: 'AddressBook',
-    component: AddressBook
+    path: '/single-chat/:roomId',
+    name: 'SingleChat',
+    component: () => import(/* webpackChunkName: "views" */ '../views/chat/SingleChat.vue')
   },
   {
-    path: '/find',
-    name: 'Find',
-    component: Find
-  },
-  {
-    path: '/about-me',
-    name: 'AboutMe',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/aboutMe/AboutMe.vue')
+    path: '/single-chat-detail/:userId',
+    name: 'SingleChatDetail',
+    component: () => import(/* webpackChunkName: "views" */ '../views/chat/SingleChatDetail.vue')
   }
 ]
 

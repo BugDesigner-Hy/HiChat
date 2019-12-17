@@ -32,7 +32,7 @@
       <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
         <ul class="section">
           <van-swipe-cell v-for="(room,index) in rooms" :key="index" style="width:100%;">
-            <li class="room">
+            <li class="room" @click="()=>enterRoom(room)">
               <div class="room-head">
                 <div class="room-dot" v-show="room.status==='unread'&& room.isDisturb"></div>
                 <div
@@ -237,6 +237,8 @@ export default {
         this.$toast("刷新成功");
         this.isLoading = false;
       }, 500);
+    },enterRoom(room){
+        this.$router.push('single-chat/'+room.id)
     }
   }
 };

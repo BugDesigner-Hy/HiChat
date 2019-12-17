@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import './plugins/vant'
 import './style/global.css'
+import './plugins/emojiPicker'
 
 Vue.config.productionTip = false
 
