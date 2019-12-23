@@ -5,6 +5,7 @@ import store from './store'
 import './plugins/vant'
 import './style/global.css'
 import './plugins/emojiPicker'
+// import './plugins/socket'
 
 Vue.config.productionTip = false
 

@@ -2,7 +2,8 @@
   <div class="chat">
     <div class="header">
       <i class="iconfont icon-add" @click="menuVisible = !menuVisible"></i>
-      <div class="title">嗨聊({{totalUnread}})</div>
+      <!-- <div class="title">嗨聊({{totalUnread}})</div> -->
+      <div class="title">嗨聊</div>
       <div class="search">
         <input type="text" placeholder="搜索" />
         <i class="iconfont icon-suosou"></i>
@@ -34,22 +35,20 @@
           <van-swipe-cell v-for="(room,index) in rooms" :key="index" style="width:100%;">
             <li class="room" @click="()=>enterRoom(room)">
               <div class="room-head">
-                <div class="room-dot" v-show="room.status==='unread'&& room.isDisturb"></div>
-                <div
-                  class="room-info"
-                  v-show="room.status==='unread'&& !room.isDisturb"
-                >{{room.unread}}</div>
+                <div class="room-dot" v-show="room.unread>0 && room.disturb"></div>
+                <div class="room-info" v-show="room.unread>0 && !room.disturb">{{room.unread}}</div>
                 <img :src="room.head" />
               </div>
               <div class="room-content">
-                <div class="room-name">{{room.name}}</div>
+                <div class="room-name">{{room.title}}</div>
                 <div class="room-date">{{room.modifyDate}}</div>
-                <div class="room-quiet" v-show="room.isDisturb">
+                <div class="room-quiet" v-show="room.disturb">
                   <i class="iconfont icon-miandarao"></i>
                 </div>
                 <div class="room-word">
-                  <span v-show="room.status==='unread'">[{{room.unread}}条]</span>
-                  {{room.type==='all'?room.lastUser+':':''}}{{room.lastWord}}
+                  <span>[{{room.unread}}条]</span>
+
+                  {{room.lastword}}
                 </div>
               </div>
             </li>
@@ -65,163 +64,57 @@
 </template>
 
 <script>
+import { getCurUser } from "../../api/test";
+import { getSingleChat, getRooms } from "../../api/room";
 export default {
   data() {
     return {
       totalUnread: "",
       isLoading: false,
       menuVisible: false,
+      curUser: "",
       rooms: [
-        {
-          id: "1",
-          type: "all",
-          head: require("./assets/head.jpg"),
-          name: "上分小伙伴",
-          lastUser: "小明",
-          lastWord: "连胜了",
-          status: "unread",
-          isDisturb: true,
-          unread: 10,
-          modifyDate: "下午2:24"
-        },
-        {
-          id: "2",
-          type: "one",
-          head: require("./assets/head2.jpg"),
-          name: "伟大的音乐家-树杰",
-          lastUser: "海洋",
-          lastWord: "晚上吃啥",
-          status: "read",
-          isDisturb: false,
-          unread: 0,
-          modifyDate: "昨天"
-        },
-        {
-          id: "3",
-          type: "all",
-          head: require("./assets/head3.jpg"),
-          name: "银川猫友群",
-          lastUser: "冯帅帅",
-          lastWord: "我家猫最可爱",
-          status: "unread",
-          isDisturb: false,
-          unread: 9,
-          modifyDate: "星期三"
-        },
-        {
-          id: "1",
-          type: "all",
-          head: require("./assets/head.jpg"),
-          name: "上分小伙伴",
-          lastUser: "小明",
-          lastWord: "连胜了",
-          status: "unread",
-          isDisturb: true,
-          unread: 10,
-          modifyDate: "2019/12/02"
-        },
-        {
-          id: "2",
-          type: "one",
-          head: require("./assets/head2.jpg"),
-          name: "伟大的音乐家-树杰",
-          lastUser: "海洋",
-          lastWord: "晚上吃啥",
-          status: "read",
-          isDisturb: false,
-          unread: 0,
-          modifyDate: "2019/12/02"
-        },
-        {
-          id: "3",
-          type: "all",
-          head: require("./assets/head3.jpg"),
-          name: "银川猫友群",
-          lastUser: "冯帅帅",
-          lastWord: "我家猫最可爱",
-          status: "unread",
-          isDisturb: false,
-          unread: 4,
-          modifyDate: "下午2:24"
-        },
-        {
-          id: "1",
-          type: "all",
-          head: require("./assets/head.jpg"),
-          name: "上分小伙伴",
-          lastUser: "小明",
-          lastWord: "连胜了",
-          status: "unread",
-          isDisturb: false,
-          unread: 0,
-          modifyDate: "星期三"
-        },
-        {
-          id: "2",
-          type: "one",
-          head: require("./assets/head2.jpg"),
-          name: "伟大的音乐家-树杰",
-          lastUser: "海洋",
-          lastWord: "晚上吃啥",
-          status: "read",
-          isDisturb: true,
-          unread: 0,
-          modifyDate: "下午2:24"
-        },
-        {
-          id: "3",
-          type: "all",
-          head: require("./assets/head3.jpg"),
-          name: "银川猫友群",
-          lastUser: "冯帅帅",
-          lastWord: "我家猫最可爱",
-          status: "unread",
-          isDisturb: false,
-          unread: 2,
-          modifyDate: "2019/12/02"
-        },
-        {
-          id: "1",
-          type: "all",
-          head: require("./assets/head.jpg"),
-          name: "上分小伙伴",
-          lastUser: "小明",
-          lastWord: "连胜了",
-          status: "unread",
-          isDisturb: false,
-          unread: 10,
-          modifyDate: "星期三"
-        },
-        {
-          id: "2",
-          type: "one",
-          head: require("./assets/head2.jpg"),
-          name: "伟大的音乐家-树杰",
-          lastUser: "海洋",
-          lastWord: "晚上吃啥",
-          status: "read",
-          isDisturb: true,
-          unread: 3,
-          modifyDate: "下午2:24"
-        },
-        {
-          id: "3",
-          type: "all",
-          head: require("./assets/head3.jpg"),
-          name: "银川猫友群",
-          lastUser: "冯帅帅",
-          lastWord: "我家猫最可爱",
-          status: "unread",
-          isDisturb: false,
-          unread: 0,
-          modifyDate: "星期三"
-        }
+        // {
+        //   id: "1",
+        //   type: "all",
+        //   head: require("./assets/head.jpg"),
+        //   name: "上分小伙伴",
+        //   lastUser: "小明",
+        //   lastWord: "连胜了",
+        //   status: "unread",
+        //   isDisturb: true,
+        //   unread: 10,
+        //   modifyDate: "下午2:24"
+        // },
       ]
     };
   },
   mounted() {
-    this.countUnread();
+    // this.messages=this.$store.state.messages;
+    getCurUser().then(res => {
+      console.log("curUser :", res);
+      this.curUser = res.data;
+      getRooms(this.curUser.id).then(res => {
+        console.log("rooms :", res);
+        this.rooms = res.data;
+        this.rooms.forEach(room => {
+          room.head = require("./assets/head2.jpg");
+          let obj = this.getLastWord(room.title);
+          room.unread = obj.unread;
+          room.lastword = obj.lastword;
+          // room.status = "unread";
+        });
+      });
+    });
+    // this.countUnread();
+    // console.log("messages :", this.messages);
   },
+  // computed: {
+  //   messages() {
+  //     console.log("messages :", this.$store.state.messages);
+  //     return this.$store.state.messages;
+  //   }
+  // },
   methods: {
     countUnread() {
       this.totalUnread = this.rooms.reduce((a, b) => {
@@ -237,8 +130,26 @@ export default {
         this.$toast("刷新成功");
         this.isLoading = false;
       }, 500);
-    },enterRoom(room){
-        this.$router.push('single-chat/'+room.id)
+    },
+    enterRoom(room) {
+      this.$router.push("single-chat/" + room.id);
+    },
+    getLastWord(title) {
+      let messages = this.$store.state.messages;
+      console.log('chat--msg :', messages);
+      let words = [];
+      messages.forEach(msg => {
+        if (msg.from === title) {
+          console.log('push :', msg);
+          words.push(msg.content);
+        }
+      });
+      console.log("words :", words);
+      let obj = {
+        lastword: words[words.length - 1],
+        unread: words.length
+      };
+      return obj;
     }
   }
 };

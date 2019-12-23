@@ -11,7 +11,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    redirect:'/chat',
+    redirect: '/chat',
     component: () => import(/* webpackChunkName: "about" */ '../views/Home.vue'),
     children: [
       {
@@ -42,6 +42,10 @@ const routes = [
     path: '/single-chat-detail/:userId',
     name: 'SingleChatDetail',
     component: () => import(/* webpackChunkName: "views" */ '../views/chat/SingleChatDetail.vue')
+  }, {
+    path: '/login',
+    name: 'Login',
+    component: () => import(/* webpackChunkName: "views" */ '../views/Login.vue')
   }
 ]
 

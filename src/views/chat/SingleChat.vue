@@ -2,19 +2,19 @@
   <div class="single-chat">
     <div class="header">
       <i class="iconfont icon-mjiantou-copy" @click="back()"></i>
-      <span>树杰</span>
+      <span>{{singleChat.to.username}}</span>
       <i class="iconfont icon-sangedian" @click="goChatDetail()"></i>
     </div>
     <div :class="['content',btnStatus.smileVisible?'btn-up':'',btnStatus.addVisible?'btn-up':'']">
       <div class="wrapper">
         <ul>
           <li
-            :class="['dialogue',item.from==='me'?'self':'']"
-            v-for="(item,index) in contents.items"
+            :class="['dialogue',item.from===curUser.username?'self':'']"
+            v-for="(item,index) in singleChat.messages"
             :key="index"
           >
             <div class="head">
-              <img :src="item.from==='him'?contents.himPic:contents.myPic" />
+              <img :src="item.from===curUser.username?singleChat.from.head:singleChat.to.head" />
             </div>
             <div class="word" v-show="item.type==='text'">{{item.content}}</div>
             <div class="img-wrapper" v-show="item.type==='img'">
@@ -36,18 +36,18 @@
           v-show="!btnStatus.inputVisible"
           @click="btnStatus.inputVisible = !btnStatus.inputVisible"
         ></i>
-        <input type="text" v-model="input" v-show="btnStatus.inputVisible" />
-        <input type="button" v-show="!btnStatus.inputVisible" value="按住 说话" />
+        <input type="text" v-model="input" @keyup.enter="sendMsg" v-show="btnStatus.inputVisible" />
+        <input type="button" v-show="!btnStatus.inputVisible" value="按住 说话" @click="talk" />
         <i class="iconfont icon-biaoqing" @click="showEmoji"></i>
         <i class="iconfont icon-add2" @click="showAddContent"></i>
       </div>
       <div class="content-wrapper">
-        <Picker
+        <!-- <Picker
           set="emojione"
           :showSearch="false"
           @select="addEmoji"
           v-show="btnStatus.smileVisible"
-        />
+        />-->
         <div class="add-content" v-show="btnStatus.addVisible">
           <div class="card" v-for="(icon,index) in addIcons" :key="index">
             <div class="icon-wrapper">
@@ -62,15 +62,20 @@
 </template>
 
 <script>
-import { Picker } from "emoji-mart-vue";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import { getCurUser } from "../../api/test";
+import { getSingleChat, getRooms } from "../../api/room";
+// import { Picker } from "emoji-mart-vue";
 export default {
   components: {
-    Picker
+    // Picker
   },
   data() {
     return {
+      stompClient: "",
       roomId: this.$route.params.roomId,
-      userId: "123",
+      curUser: "",
       btnStatus: {
         inputVisible: true,
         smileVisible: false,
@@ -111,79 +116,21 @@ export default {
           icon: "icon-shoucang"
         }
       ],
-      contents: {
-        roomId: 1,
-        type: "single-chat",
-        to: "shujie",
-        himPic: require("./assets/head.jpg"),
-        myPic: require("./assets/head2.jpg"),
-        items: [
-          {
-            id: 1,
-            date: "2019-12-10 12:10:23",
-            type: "text",
-            content: "今晚吃啥今晚吃啥今晚吃啥今晚吃啥今晚吃啥今晚吃啥",
-            from: "him"
-          },
-          {
-            id: 2,
-            date: "2019-12-10 12:11:30",
-            type: "text",
-            content: "吃素三鲜",
-            from: "me"
-          },
-          {
-            id: 3,
-            date: "2019-12-10 12:13:48",
-            type: "text",
-            content: "晚上还去健身吗",
-            from: "me"
-          },
-          {
-            id: 4,
-            date: "2019-12-10 12:14:23",
-            type: "text",
-            content: "去啊~",
-            from: "him"
-          },
-          {
-            id: 4,
-            date: "2019-12-10 12:14:23",
-            type: "img",
-            content: require("./assets/head3.jpg"),
-            from: "him"
-          },
-          {
-            id: 5,
-            date: "2019-12-10 12:13:48",
-            type: "text",
-            content: "你吉他弹的好垃圾哦",
-            from: "me"
-          },
-          {
-            id: 6,
-            date: "2019-12-10 12:14:23",
-            type: "text",
-            content: "谢谢夸奖 嘻嘻(#^.^#)",
-            from: "him"
-          },
-          {
-            id: 7,
-            date: "2019-12-10 12:14:23",
-            type: "img",
-            content: require("./assets/head3.jpg"),
-            from: "me"
-          },
-          {
-            id: 8,
-            date: "2019-12-10 12:14:23",
-            type: "text",
-            content: "谢谢夸奖 嘻嘻(#^.^#)",
-            from: "him"
-          }
-        ]
-      }
+      singleChat: {}
     };
+  },
+  mounted() {
+    getCurUser().then(res => {
+      this.curUser = res.data;
+    });
+    getSingleChat(this.roomId).then(res => {
+      // console.log("SingleChat :", res.data);
+      this.singleChat = res.data;
+      this.singleChat.messages = this.getselfMsg(this.singleChat.to.username);
+      this.singleChat.from.head = require("./assets/head2.jpg");
+      this.singleChat.to.head = require("./assets/head.jpg");
+      this.socketConnect();
+    });
   },
   methods: {
     back() {
@@ -206,6 +153,59 @@ export default {
     goChatDetail() {
       //   this.$router.push({path:"chat-detail/" + this.userId});
       this.$router.push({ name: "SingleChatDetail", params: { userId: 123 } });
+    },
+    sendMsg() {
+      let message = {
+        id: 1,
+        date: new Date(),
+        type: "text",
+        content: this.input,
+        from: this.curUser.username,
+        to: this.singleChat.to.username
+      };
+      this.singleChat.messages.push(message);
+      this.stompClient.send("/app/chat", {}, JSON.stringify(message));
+      this.input = "";
+    },
+    talk() {
+      // let message = {
+      //   id: 1,
+      //   date: new Date(),
+      //   type: "voice",
+      //   content: this.input,
+      //   from: this.curUser.username,
+      //   to: this.singleChat.to.username
+      // };
+      // this.singleChat.messages.push(message);
+      // this.stompClient.send("/app/chat", {}, JSON.stringify(message));
+    },
+    socketConnect() {
+      let socket = new SockJS("http://localhost:8083/api/single-chat");
+      this.stompClient = Stomp.over(socket);
+      this.stompClient.connect({}, frame => {
+        // console.log("Connected: " + frame);
+        this.stompClient.subscribe(
+          "/user/queue/chat/" + this.singleChat.to.username,
+          res => {
+            let message = JSON.parse(res.body);
+            console.log("message :", message);
+            // if (message.from != this.singleChat.to.username) return;
+            this.singleChat.messages.push(message);
+            this.$store.dispatch("addMessages", message);
+          }
+        );
+      });
+    },
+    getselfMsg(title) {
+      let messages = this.$store.state.messages;
+      console.log('single-chat--msg :', messages);
+      let words = [];
+      messages.forEach(msg => {
+        if (msg.from === title) {
+          words.push(msg);
+        }
+      });
+      return words;
     }
   }
 };
